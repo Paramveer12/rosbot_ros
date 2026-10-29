@@ -82,7 +82,10 @@ def launch_setup(context, *args, **kwargs):
         executable='parameter_bridge',
         name='clock_bridge',
         output='screen',
-        arguments=['/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock'],
+        arguments=[
+            '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
+            '/scan@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan',
+        ],
     )
 
     spawn = IncludeLaunchDescription(
