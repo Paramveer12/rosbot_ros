@@ -280,8 +280,24 @@ collision_monitor:
     source_timeout: 1.0
     base_shift_correction: True
     stop_pub_timeout: 2.0
-    polygons: []
-    observation_sources: []
+    polygons: ["FootprintApproach"]
+    FootprintApproach:
+      type: "polygon"
+      action_type: "approach"
+      footprint_topic: "local_costmap/published_footprint"
+      time_before_collision: 0.3
+      simulation_time_step: 0.1
+      min_points: 12
+      visualize: False
+      enabled: False
+    observation_sources: ["scan"]
+    scan:
+      type: "scan"
+      topic: "/scan"
+      min_height: 0.05
+      max_height: 2.0
+      min_range: 0.16
+      enabled: False
 
 route_server:
   ros__parameters:
