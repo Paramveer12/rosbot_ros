@@ -33,8 +33,8 @@ ARGUMENTS = [
                           description="Nav2 costmap scan topic (empty: /scan)"),
     DeclareLaunchArgument('amcl_scan_topic', default_value='',
                           description="AMCL scan topic (empty: /scan)"),
-    DeclareLaunchArgument('nav2_delay', default_value='20.0',
-                          description='Seconds after spawn before localization starts (Nav2 starts 10s later)'),
+    DeclareLaunchArgument('nav2_delay', default_value='30.0',
+                          description='Seconds after spawn before localization starts (Nav2 starts 20s later)'),
     DeclareLaunchArgument('x', default_value='0.0', description='Initial robot x position'),
     DeclareLaunchArgument('y', default_value='0.0', description='Initial robot y position'),
     DeclareLaunchArgument('z', default_value='0.0', description='Initial robot z position'),
@@ -154,7 +154,7 @@ def launch_setup(context, *args, **kwargs):
         actions=[localization],
     )
     nav2_timer = TimerAction(
-        period=delay + 10.0,
+        period=delay + 20.0,
         actions=[nav2],
     )
 

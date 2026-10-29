@@ -337,3 +337,10 @@ docking_server:
       v_linear_min: 0.15
       v_linear_max: 0.15
 
+lifecycle_manager_navigation:
+  ros__parameters:
+    use_sim_time: true
+    service_timeout: 5000
+    bond_timeout: 5000
+
+
