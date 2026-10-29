@@ -1,0 +1,46 @@
+# known_regression: ROSbot 3 with Nav2 costmaps blind (dead scan topic).
+# AMCL still receives /scan via amcl_scan_topic.
+# Must FAIL: the robot cannot perceive the dropped obstacle.
+version: "1"
+
+environment:
+  ros_distro: jazzy
+  build:
+    rosdep: true
+    repos: [rosbot/rosbot_simulation.repos]
+
+robot:
+  launch: roboci/rosbot.launch.py
+  launch_args:
+    world: "${world}"
+    map: package://husarion_gz_worlds/maps/husarion_world.yaml
+    scan_topic: /scan_typo
+    amcl_scan_topic: "${sensor:lidar}"
+  model: rosbot
+  namespace: ""
+  footprint_link: base_link
+  sensors:
+    lidar: { topic: /scan, type: laser_scan }
+
+worlds:
+  husarion_world:
+    file: package://husarion_gz_worlds/worlds/husarion_world.sdf
+    map_pose: { x: 0.0, y: 0.0 }
+
+defaults:
+  timeout: 120s
+  seeds: [1, 2, 3]
+
+scenarios:
+  - name: known_regression
+    description: A box lands on the path two seconds in; with blind costmaps the robot cannot avoid it.
+    world: husarion_world
+    steps:
+      - send_nav_goal: { x: 4.0, y: 0.0 }
+      - inject_obstacle: { at: 2s, model: box_0.5m, pose: { x: 2.0, y: 0.0 } }
+      - wait_until: { event: goal_result, timeout: 90s }
+    assertions:
+      - reached_goal: { tolerance: 0.5m }
+      - no_collision: {}
+      - min_distance_to_obstacle: { value: 0.1m }
+    metrics: [time_to_goal, path_length, min_clearance, recoveries]
