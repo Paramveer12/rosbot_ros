@@ -19,3 +19,5 @@ husarion_gz_worlds/
 .claude/settings.local.json
 .claude/worktrees/
 .claude/scratch/
+
+.roboci/
