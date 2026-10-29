@@ -1,0 +1,80 @@
+# Husarion ROSbot 3 in Husarion world, with Nav2 and AMCL configs.
+# Wave 2 of docs/wave1-wave2-retest-plan.md in RoboCI.
+version: "1"
+
+environment:
+  ros_distro: jazzy
+  build:
+    rosdep: true
+    repos: [rosbot/rosbot_simulation.repos]
+
+robot:
+  launch: roboci/rosbot-server-timeout.launch.py
+  launch_args:
+    world: "${world}"
+    map: package://husarion_gz_worlds/maps/husarion_world.yaml
+    scan_topic: "${sensor:lidar}"
+    amcl_scan_topic: "${sensor:lidar}"
+  model: rosbot
+  namespace: ""
+  footprint_link: base_link
+  sensors:
+    lidar: { topic: /scan, type: laser_scan }
+
+worlds:
+  husarion_world:
+    file: package://husarion_gz_worlds/worlds/husarion_world.sdf
+    map_pose: { x: 0.0, y: 0.0 }
+
+defaults:
+  timeout: 120s
+  seeds: [1, 2, 3]
+
+scenarios:
+  - name: cross_open_space
+    description: Cross the open space to the far side of the room.
+    world: husarion_world
+    steps:
+      - send_nav_goal: { x: 4.0, y: 0.0 }
+      - wait_until: { event: goal_result, timeout: 90s }
+    assertions:
+      - reached_goal: { tolerance: 0.5m }
+      - no_collision: {}
+      - max_duration: { value: 90s }
+    metrics: [time_to_goal, path_length, min_clearance]
+
+  - name: dodge_dropped_box
+    description: A box lands on the path two seconds in; Nav2 has to drive around it.
+    world: husarion_world
+    steps:
+      - send_nav_goal: { x: 4.0, y: 0.0 }
+      - inject_obstacle: { at: 2s, model: box_0.5m, pose: { x: 2.0, y: 0.0 } }
+      - wait_until: { event: goal_result, timeout: 90s }
+    assertions:
+      - reached_goal: { tolerance: 0.5m }
+      - no_collision: {}
+      - min_distance_to_obstacle: { value: 0.1m }
+    metrics: [time_to_goal, path_length, min_clearance, recoveries]
+
+  - name: start_elsewhere
+    description: Move the robot without telling Nav2, then navigate from there.
+    world: husarion_world
+    steps:
+      - set_pose: { x: 0.0, y: -4.0, yaw: 0.0 }
+      - send_nav_goal: { x: 0.0, y: 0.0 }
+      - wait_until: { event: goal_result, timeout: 90s }
+    assertions:
+      - reached_goal: { tolerance: 0.5m }
+      - no_collision: {}
+
+  - name: lidar_blackout
+    description: The lidar goes dark for 2 s mid-route.
+    world: husarion_world
+    steps:
+      - send_nav_goal: { x: 4.0, y: 0.0 }
+      - sensor_dropout: { sensor: lidar, at: 2s, duration: 2s }
+      - wait_until: { event: goal_result, timeout: 90s }
+    assertions:
+      - reached_goal: { tolerance: 0.5m }
+      - no_collision: {}
+    metrics: [time_to_goal, path_length]
