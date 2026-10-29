@@ -28,7 +28,7 @@ worlds:
 
 defaults:
   timeout: 120s
-  seeds: [1]
+  seeds: [1, 2, 3]
 
 scenarios:
   - name: cross_open_space
